@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"filehost"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/nuuls/filehost"
 
 	"github.com/gorilla/mux"
 )
