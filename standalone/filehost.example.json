@@ -1,0 +1,6 @@
+{
+    "host": ":443",
+    "key": "dank_password",
+    "base_url": "https://nuuls.com/",
+    "url_length": 4
+}
