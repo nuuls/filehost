@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+<meta charset=utf-8 />
+<title>upload</title>
+<script>
+function upload() {
+    console.log("xD");
+    var file = document.getElementById('testFile').files[0];
+    var filepath = document.getElementById('testFile').value;
+    var ext = /\.(\w+)$/.exec(filepath)
+    console.log(ext);
+    console.log(ext[1]);
+    $.ajax({
+        url: "{{.BaseURL}}upload?key={{.Key}}",
+        type: "POST",
+        data: file,
+        headers: { "file-type":ext[1] },
+        processData: false,
+        success: function(msg) {
+            console.log(msg);
+            document.getElementById("link").innerHTML = '<a href="'+msg+'">'+msg+'</a>';
+        }
+    });
+};
+</script>
+</head>
+<body>
+  <input id="testFile" type='file' onchange="upload()" />
+    <div id="link">
+    </div>
+</body>
+</html>

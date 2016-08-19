@@ -36,7 +36,13 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			if strings.Contains(ct, "form-data") { // used by sharex
 				typ, bs = getFormat(bs)
 			} else {
-				typ, bs = validateFileType(strings.ToLower(spl[1]), bs)
+				log.Debug("XDDDDDDDDDDDD", ct)
+				if typ = extFromMime(ct); typ == "" {
+					log.Debug(typ)
+					w.Write([]byte("https://i.imgur.com/r7FGMh8.png"))
+					return
+				}
+				log.Debug(typ)
 			}
 		}
 	} else {

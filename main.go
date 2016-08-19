@@ -2,7 +2,9 @@ package filehost
 
 import (
 	"encoding/json"
+	"html/template"
 	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -12,13 +14,15 @@ import (
 var log = initLogger(logging.DEBUG)
 var cfg = loadConfig()
 var defaultAllowed = []string{"png", "jpg", "jpeg", "gif", "gifv", "mp3", "mp4", "txt"}
+var uploadTempl = template.Must(template.ParseFiles("upload.html"))
 
 type config struct {
-	Key       string   `json:"key"`
-	BaseURL   string   `json:"base_url"`
-	UrlLength int      `json:"url_length"`
-	Blocked   []string `json:"blocked"`
-	Allowed   []string `json:"allowed"`
+	Key        string   `json:"key"`
+	BaseURL    string   `json:"base_url"`
+	UrlLength  int      `json:"url_length"`
+	Blocked    []string `json:"blocked"`
+	Allowed    []string `json:"allowed"`
+	UploadPage bool     `json:"upload_page"`
 }
 
 func (c *config) isBlocked(s string) bool {
@@ -42,8 +46,15 @@ func (c *config) isBlocked(s string) bool {
 
 func Init(m *mux.Router) {
 	log.Debug("starting")
+	if cfg.UploadPage {
+		m.HandleFunc("/", index)
+	}
 	m.HandleFunc("/upload", upload)
 	m.HandleFunc(`/{id:[\w\.]+}`, serveFile)
+}
+
+func index(w http.ResponseWriter, r *http.Request) {
+	uploadTempl.Execute(w, cfg)
 }
 
 func loadConfig() *config {

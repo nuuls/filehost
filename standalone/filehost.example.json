@@ -3,6 +3,7 @@
     "key": "dank_password",
     "base_url": "https://nuuls.com/",
     "url_length": 4,
+    "upload_page": true,
     "allowed": [
         "png",
         "jpg",
