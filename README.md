@@ -1,6 +1,6 @@
 # filehost
 
-[![Build Status](https://travis-ci.org/nuuls/filehost.svg?branch=master)](https://travis-ci.org/nuuls/filehost)
+[![Build Status](https://api.travis-ci.org/nuuls/filehost.svg)](https://travis-ci.org/nuuls/filehost)
 
 ## how to use:
 
