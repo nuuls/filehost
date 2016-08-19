@@ -2,5 +2,19 @@
     "host": ":443",
     "key": "dank_password",
     "base_url": "https://nuuls.com/",
-    "url_length": 4
+    "url_length": 4,
+    "allowed": [
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "gifv",
+        "mp3",
+        "mp4",
+        "txt"
+    ],
+    "blocked": [
+        "exe",
+        "php"
+    ]
 }

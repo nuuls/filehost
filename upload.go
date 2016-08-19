@@ -14,8 +14,11 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	bs, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error(err)
+		w.Write([]byte("error uploading image"))
+		return
 	}
-	if len(bs) < 5 {
+	// check if body contains any data
+	if len(bs) < 1 {
 		w.Write([]byte("https://i.imgur.com/r7FGMh8.png"))
 		return
 	}
@@ -29,12 +32,11 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		typ, bs = validateFileType(strings.ToLower(r.Header.Get("file-type")), bs)
 	} else if ct := r.Header.Get("Content-Type"); ct != "" {
 		spl := strings.Split(ct, "/")
-		log.Debug(spl)
 		if len(spl) > 1 {
 			if strings.Contains(ct, "form-data") { // used by sharex
 				typ, bs = getFormat(bs)
 			} else {
-				typ, bs = validateFileType(strings.ToLower(ct), bs)
+				typ, bs = validateFileType(strings.ToLower(spl[1]), bs)
 			}
 		}
 	} else {
@@ -42,7 +44,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	}
 	fileName := randString(cfg.UrlLength) + "." + typ
 	log.Info(fileName)
-	log.Info(r.Header)
+	log.Debug(r.Header)
 	file, err := os.Create("./files/" + fileName)
 	if err != nil {
 		log.Error(err)
@@ -52,6 +54,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	file.Write(bs)
 	w.Write([]byte(cfg.BaseURL + fileName))
+	log.Info("uploaded", fileName, "to", cfg.BaseURL+fileName)
 }
 
 var mimeRegex = regexp.MustCompile(fmt.Sprintf(`(\-+\w+)%s.+%sContent-Type: \w+\/(\w+)%s`, "\r\n", "\r\n", "\r\n\r\n"))
@@ -59,7 +62,6 @@ var mimeRegex = regexp.MustCompile(fmt.Sprintf(`(\-+\w+)%s.+%sContent-Type: \w+\
 func getFormat(file []byte) (string, []byte) {
 	log.Debug(len(file))
 	matches := mimeRegex.FindSubmatch(file)
-	log.Info(matches)
 	if len(matches) < 3 {
 		log.Error("no mime type found")
 		return "png", file
@@ -69,14 +71,11 @@ func getFormat(file []byte) (string, []byte) {
 	file = bytes.Replace(file, matches[0], []byte(""), 1)
 	file = bytes.Replace(file, matches[1], []byte(""), 1)
 	return validateFileType(string(fileType), file)
-
 }
 
 func validateFileType(fileType string, file []byte) (string, []byte) {
-	switch fileType {
-	case "png", "jpg", "jpeg", "gif", "gifv", "mp3", "mp4", "txt":
-		return fileType, file
-	default:
+	if cfg.isBlocked(fileType) {
 		return "fuckyou", []byte("LUL")
 	}
+	return fileType, file
 }

@@ -11,11 +11,33 @@ import (
 
 var log = initLogger(logging.DEBUG)
 var cfg = loadConfig()
+var defaultAllowed = []string{"png", "jpg", "jpeg", "gif", "gifv", "mp3", "mp4", "txt"}
 
 type config struct {
-	Key       string `json:"key"`
-	BaseURL   string `json:"base_url"`
-	UrlLength int    `json:"url_length"`
+	Key       string   `json:"key"`
+	BaseURL   string   `json:"base_url"`
+	UrlLength int      `json:"url_length"`
+	Blocked   []string `json:"blocked"`
+	Allowed   []string `json:"allowed"`
+}
+
+func (c *config) isBlocked(s string) bool {
+	allowed := c.Allowed
+	if len(c.Allowed) == 0 {
+		allowed = defaultAllowed
+	}
+	var b bool = true
+	for _, e := range allowed {
+		if e == s {
+			return false
+		}
+	}
+	for _, e := range c.Blocked {
+		if e == s {
+			b = true
+		}
+	}
+	return b
 }
 
 func Init(m *mux.Router) {
