@@ -17,4 +17,4 @@
 3. fill in your stuff like this ![](https://i.nuuls.com/KPim.png)
 4. click Update
 5. Destinations > image uploader > custom image uploader
-6. Destinations > file uploader > custom file uploader (only mp4 will work)
+6. Destinations > file uploader > custom file uploader
