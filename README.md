@@ -1,5 +1,7 @@
 # filehost
 
+[![Build Status](https://travis-ci.org/nuuls/filehost.svg?branch=master)](https://travis-ci.org/nuuls/filehost)
+
 ## how to use:
 
 1. cd standalone
