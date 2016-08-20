@@ -30,6 +30,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	var typ string
 	if r.Header.Get("file-type") != "" {
 		typ, bs = validateFileType(strings.ToLower(r.Header.Get("file-type")), bs)
+		if typ == "" {
+			w.Write([]byte("https://i.imgur.com/r7FGMh8.png"))
+			return
+		}
 	} else if ct := r.Header.Get("Content-Type"); ct != "" {
 		spl := strings.Split(ct, "/")
 		if len(spl) > 1 {
@@ -44,6 +48,9 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				}
 				log.Debug(typ)
 			}
+		} else {
+			w.Write([]byte("https://i.imgur.com/r7FGMh8.png"))
+			return
 		}
 	} else {
 		typ, bs = getFormat(bs)
@@ -81,7 +88,7 @@ func getFormat(file []byte) (string, []byte) {
 
 func validateFileType(fileType string, file []byte) (string, []byte) {
 	if cfg.isBlocked(fileType) {
-		return "fuckyou", []byte("LUL")
+		return "", nil
 	}
 	return fileType, file
 }
