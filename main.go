@@ -30,18 +30,14 @@ func (c *config) isBlocked(s string) bool {
 	if len(c.Allowed) == 0 {
 		allowed = defaultAllowed
 	}
-	var b bool = true
 	for _, e := range allowed {
 		if e == s {
 			return false
+			log.Info(s, "ALLOWED")
 		}
 	}
-	for _, e := range c.Blocked {
-		if e == s {
-			b = true
-		}
-	}
-	return b
+	log.Info(s, "BLOCKED")
+	return true
 }
 
 func Init(m *mux.Router) {

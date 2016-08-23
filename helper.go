@@ -56,7 +56,7 @@ func extFromMime(s string) string {
 		return ""
 	}
 	var m string
-	var blocked bool
+	var blocked = true
 	for _, x := range exts {
 		m = x[1:]
 		if !cfg.isBlocked(m) {
