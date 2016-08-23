@@ -46,7 +46,7 @@ func Init(m *mux.Router) {
 		m.HandleFunc("/", index)
 	}
 	m.HandleFunc("/upload", upload)
-	m.HandleFunc(`/{id:[\w\.]+}`, serveFile)
+	m.HandleFunc(`/{id:[\w\.\-]+}`, serveFile)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
