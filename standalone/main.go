@@ -30,7 +30,7 @@ func main() {
 		Authenticate: func(r *http.Request) bool {
 			return true
 		},
-		Logger: logrus.New(),
+		Logger: logrus.StandardLogger(),
 		NewFileName: func() string {
 			return strconv.Itoa(rand.Intn(420))
 		},

@@ -10,6 +10,8 @@ import (
 
 	"path/filepath"
 
+	"strings"
+
 	"github.com/pressly/chi"
 	"github.com/sirupsen/logrus"
 )
@@ -35,6 +37,7 @@ type FileInfo struct {
 	Uploader interface{} // information about the person who uploaded it
 	Time     time.Time
 	Expire   time.Duration
+	Clicks   int
 }
 
 func New(conf *Config) http.Handler {
@@ -57,6 +60,7 @@ func New(conf *Config) http.Handler {
 		})
 	})
 	r.Post("/upload", upload)
+	r.Get("/:file", serveFile)
 	return r
 }
 
@@ -96,6 +100,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			}
 			l = l.WithField("file", name)
 			l.Info("uploading...")
+			l.Debug(r.Header)
+			l.Debug(h.Header)
+			mimeType := h.Header.Get("Content-Type")
+			log.Info(mimeType)
 			// TODO: check mime type and append file extension if needed
 			dstPath := filepath.Join(cfg.BasePath, name)
 			// TODO: check if file exists
@@ -113,5 +121,63 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			}
 			// TODO: save fileinfo
 		}
+	}
+}
+
+func serveFile(w http.ResponseWriter, r *http.Request) {
+	l := r.Context().Value("logger").(logrus.FieldLogger)
+	name := chi.URLParam(r, "file")
+	l = l.WithField("file", name)
+	file, err := os.Open(filepath.Join(cfg.BasePath, name))
+	if err != nil {
+		l.WithError(err).Warning("not found")
+		http.Error(w, "404 Not Found", 404)
+		return
+	}
+	spl := strings.Split(name, ".")
+	id := spl[0]
+	extension := ""
+	if len(spl) > 1 {
+		extension = spl[len(spl)-1]
+		_ = extension // TODO: do something with it
+	}
+	mimeType := ""
+	if cfg.GetFileInfo != nil {
+		info := cfg.GetFileInfo(id)
+		if info != nil {
+			if info.Expire != 0 {
+				if time.Since(time.Now().Add(info.Expire)) > info.Expire {
+					l.Info("expired")
+					http.Error(w, "404 Not Found", 404)
+					return
+				}
+			}
+			mimeType = info.MimeType
+			info.Clicks++
+		}
+	}
+
+	if mimeType == "" {
+		sniffData := make([]byte, 512)
+		n, err := file.Read(sniffData)
+		if err != nil {
+			l.WithError(err).Error("cannot read from file")
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+		sniffData = sniffData[:n]
+		mimeType = http.DetectContentType(sniffData)
+		_, err = file.Seek(0, 0)
+		if err != nil {
+			l.WithError(err).Error("cannot seek file")
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+	}
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Type", mimeType)
+	_, err = io.Copy(w, file)
+	if err != nil {
+		l.WithError(err).Error("cannot serve file")
 	}
 }
