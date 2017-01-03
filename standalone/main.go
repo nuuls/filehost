@@ -35,6 +35,7 @@ func main() {
 			return strconv.Itoa(rand.Intn(420))
 		},
 		BasePath: "./files",
+		BaseURL:  "http://localhost:7494/",
 		AllowFileName: func(r *http.Request) bool {
 			return true
 		},
@@ -48,7 +49,13 @@ func main() {
 }
 
 type config struct {
-	Host string `json:"host"`
+	Host             string
+	AllowedMimeTypes []string
+	BasePath         string
+	Password         string
+	MasterPassword   string
+	ReturnURL        string // https://i.nuuls.com/
+	NameLength       int
 }
 
 func loadConfig() *config {

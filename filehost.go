@@ -12,6 +12,8 @@ import (
 
 	"strings"
 
+	"mime"
+
 	"github.com/pressly/chi"
 	"github.com/sirupsen/logrus"
 )
@@ -22,6 +24,7 @@ var cfg *Config
 type Config struct {
 	AllowedMimeTypes []string
 	BasePath         string
+	BaseURL          string
 	NewFileName      func() string
 	SaveFileInfo     func(*FileInfo)
 	GetFileInfo      func(string) *FileInfo
@@ -104,8 +107,17 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			l.Debug(h.Header)
 			mimeType := h.Header.Get("Content-Type")
 			log.Info(mimeType)
+			extensions, err := mime.ExtensionsByType(mimeType)
+			extension := ".png"
+			if len(extensions) < 1 || err != nil {
+				l.WithError(err).Warning("no extension found, sniffing mime type...")
+				// TODO: sniff for mime type
+			} else {
+				extension = extensions[0]
+			}
+			fullName := name + extension
 			// TODO: check mime type and append file extension if needed
-			dstPath := filepath.Join(cfg.BasePath, name)
+			dstPath := filepath.Join(cfg.BasePath, fullName)
 			// TODO: check if file exists
 			dst, err := os.Create(dstPath)
 			if err != nil {
@@ -119,6 +131,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal Server Error", 500)
 				return
 			}
+			w.Write([]byte(cfg.BaseURL + fullName))
 			// TODO: save fileinfo
 		}
 	}
