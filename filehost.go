@@ -96,7 +96,9 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			}
 			l = l.WithField("file", name)
 			l.Info("uploading...")
+			// TODO: check mime type and append file extension if needed
 			dstPath := filepath.Join(cfg.BasePath, name)
+			// TODO: check if file exists
 			dst, err := os.Create(dstPath)
 			if err != nil {
 				l.WithError(err).Error("cannot create file")
@@ -109,6 +111,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal Server Error", 500)
 				return
 			}
+			// TODO: save fileinfo
 		}
 	}
 }
