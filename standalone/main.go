@@ -4,18 +4,47 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/nuuls/filehost"
 
-	"github.com/gorilla/mux"
+	"github.com/pressly/chi"
+	"github.com/pressly/chi/middleware"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	cfg := loadConfig()
-	m := mux.NewRouter()
-	filehost.Init(m)
-	log.Fatal(http.ListenAndServe(cfg.Host, m))
+	//cfg := loadConfig()
+	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     true,
+		FullTimestamp:   true,
+		TimestampFormat: "02-01 15:04:05.000",
+	})
+	conf := &filehost.Config{
+		AllowedMimeTypes: []string{
+			"*/*",
+		},
+		Authenticate: func(r *http.Request) bool {
+			return true
+		},
+		Logger: logrus.New(),
+		NewFileName: func() string {
+			return strconv.Itoa(rand.Intn(420))
+		},
+		BasePath: "./files",
+		AllowFileName: func(r *http.Request) bool {
+			return true
+		},
+	}
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Handle("/*", filehost.New(conf))
+
+	log.Fatal(http.ListenAndServe(":7494", r))
 }
 
 type config struct {
