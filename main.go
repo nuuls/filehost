@@ -40,6 +40,7 @@ func main() {
 		NewFileName: func() string {
 			return filehost.RandString(cfg.NameLength)
 		},
+		DB:       filehost.NewDB("./db/database.json"),
 		BasePath: cfg.BasePath,
 		BaseURL:  cfg.BaseURL,
 		AllowFileName: func(r *http.Request) bool {

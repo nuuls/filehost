@@ -14,8 +14,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log logrus.FieldLogger
+var log logrus.FieldLogger = logrus.StandardLogger()
 var cfg *Config
+
+// Database is some sort of database that stores FileInfo
+type Database interface {
+	// GetFileInfo returns the FileInfo associated with the given
+	// File Name, it returns nil if the file was not found
+	GetFileInfo(string) *FileInfo
+	SaveFileInfo(*FileInfo)
+}
 
 // Config contains the needed information to call New
 type Config struct {
@@ -23,8 +31,7 @@ type Config struct {
 	BasePath         string
 	BaseURL          string
 	NewFileName      func() string
-	SaveFileInfo     func(*FileInfo)
-	GetFileInfo      func(string) *FileInfo
+	DB               Database
 	Authenticate     func(*http.Request) bool
 	AllowFileName    func(*http.Request) bool
 	Logger           logrus.FieldLogger
@@ -140,7 +147,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			}
 			w.Write([]byte(cfg.BaseURL + fullName))
 			l.Info("uploaded to ", cfg.BaseURL+fullName)
-			if cfg.SaveFileInfo != nil {
+			if cfg.DB != nil {
 				info := &FileInfo{
 					Name: name,
 					Path: dstPath,
@@ -151,7 +158,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 					Time:     time.Now(),
 					MimeType: mimeType,
 				}
-				cfg.SaveFileInfo(info)
+				cfg.DB.SaveFileInfo(info)
 			}
 		}
 	}
@@ -176,8 +183,8 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 		extension = spl[len(spl)-1]
 	}
 	mimeType := ""
-	if cfg.GetFileInfo != nil {
-		info := cfg.GetFileInfo(id)
+	if cfg.DB != nil {
+		info := cfg.DB.GetFileInfo(id)
 		if info != nil {
 			if info.Expire != 0 {
 				if time.Since(time.Now().Add(info.Expire)) > info.Expire {

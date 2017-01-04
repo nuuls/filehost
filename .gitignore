@@ -2,3 +2,4 @@
 *.exe~
 /files
 /filehost.json
+/db
