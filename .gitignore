@@ -1,4 +1,5 @@
 *.exe
 *.exe~
-/standalone/files
-/standalone/filehost.json
+/filehost
+/files
+/filehost.json

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/nuuls/filehost"
+	"github.com/nuuls/filehost/filehost"
 
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/middleware"
