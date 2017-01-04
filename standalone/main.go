@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
-	"strconv"
 
 	"github.com/nuuls/filehost"
 
@@ -16,7 +14,7 @@ import (
 )
 
 func main() {
-	//cfg := loadConfig()
+	cfg := loadConfig()
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors:     true,
@@ -24,20 +22,38 @@ func main() {
 		TimestampFormat: "02-01 15:04:05.000",
 	})
 	conf := &filehost.Config{
-		AllowedMimeTypes: []string{
-			"*/*",
-		},
+		AllowedMimeTypes: cfg.AllowedMimeTypes,
 		Authenticate: func(r *http.Request) bool {
-			return true
+			if cfg.Password == "" {
+				return true
+			}
+			password := r.URL.Query().Get("password")
+			if password == "" {
+				password = r.Header.Get("password")
+			}
+			if password == cfg.Password {
+				return true
+			}
+			return false
 		},
 		Logger: logrus.StandardLogger(),
 		NewFileName: func() string {
-			return strconv.Itoa(rand.Intn(420))
+			return filehost.RandString(cfg.NameLength)
 		},
-		BasePath: "./files",
-		BaseURL:  "http://localhost:7494/",
+		BasePath: cfg.BasePath,
+		BaseURL:  cfg.BaseURL,
 		AllowFileName: func(r *http.Request) bool {
-			return true
+			if cfg.MasterPassword == "" {
+				return false
+			}
+			password := r.URL.Query().Get("password")
+			if password == "" {
+				password = r.Header.Get("password")
+			}
+			if password == cfg.MasterPassword {
+				return true
+			}
+			return false
 		},
 	}
 	r := chi.NewRouter()
@@ -54,7 +70,7 @@ type config struct {
 	BasePath         string
 	Password         string
 	MasterPassword   string
-	ReturnURL        string // https://i.nuuls.com/
+	BaseURL          string // https://i.nuuls.com/
 	NameLength       int
 }
 

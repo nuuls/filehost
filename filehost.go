@@ -3,16 +3,12 @@ package filehost
 import (
 	"context"
 	"io"
-	"net/http"
-	"time"
-
-	"os"
-
-	"path/filepath"
-
-	"strings"
-
 	"mime"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/pressly/chi"
 	"github.com/sirupsen/logrus"
@@ -21,6 +17,7 @@ import (
 var log logrus.FieldLogger
 var cfg *Config
 
+// Config contains the needed information to call New
 type Config struct {
 	AllowedMimeTypes []string
 	BasePath         string
@@ -33,6 +30,7 @@ type Config struct {
 	Logger           logrus.FieldLogger
 }
 
+// FileInfo contains additional information about the File
 type FileInfo struct {
 	Name     string // filename without extension
 	Path     string
@@ -43,6 +41,7 @@ type FileInfo struct {
 	Clicks   int
 }
 
+// New initializes a http Handler and returns it
 func New(conf *Config) http.Handler {
 	cfg = conf
 	log = cfg.Logger
@@ -58,7 +57,6 @@ func New(conf *Config) http.Handler {
 					"ip":         r.RemoteAddr,
 					"user-agent": r.UserAgent(),
 				})))
-			log.Debug("xd")
 			next.ServeHTTP(w, r)
 		})
 	})
@@ -69,7 +67,6 @@ func New(conf *Config) http.Handler {
 
 func upload(w http.ResponseWriter, r *http.Request) {
 	l := r.Context().Value("logger").(logrus.FieldLogger)
-	l.Debug("NaM")
 	defer r.Body.Close()
 	if !cfg.Authenticate(r) {
 		http.Error(w, "Not Authenticated", http.StatusUnauthorized)
@@ -98,8 +95,12 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				l.Error(err)
 			}
 			name := h.Filename
-			if !cfg.AllowFileName(r) {
-				name = cfg.NewFileName()
+			if !cfg.AllowFileName(r) || name == "" {
+				if cfg.NewFileName != nil {
+					name = cfg.NewFileName()
+				} else {
+					name = RandString(5)
+				}
 			}
 			l = l.WithField("file", name)
 			l.Info("uploading...")
@@ -107,6 +108,11 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			l.Debug(h.Header)
 			mimeType := h.Header.Get("Content-Type")
 			log.Info(mimeType)
+			if !whiteListed(cfg.AllowedMimeTypes, mimeType) {
+				l.WithField("mime-type", mimeType).Warning("mime type not allowed")
+				http.Error(w, "Forbidden", 403)
+				return
+			}
 			extensions, err := mime.ExtensionsByType(mimeType)
 			extension := ".png"
 			if len(extensions) < 1 || err != nil {
@@ -132,7 +138,20 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			w.Write([]byte(cfg.BaseURL + fullName))
-			// TODO: save fileinfo
+			l.Info("uploaded to ", cfg.BaseURL+fullName)
+			if cfg.SaveFileInfo != nil {
+				info := &FileInfo{
+					Name: name,
+					Path: dstPath,
+					Uploader: map[string]interface{}{
+						"ip":         r.RemoteAddr,
+						"user-agent": r.UserAgent(),
+					},
+					Time:     time.Now(),
+					MimeType: mimeType,
+				}
+				cfg.SaveFileInfo(info)
+			}
 		}
 	}
 }
