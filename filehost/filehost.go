@@ -2,6 +2,7 @@ package filehost
 
 import (
 	"context"
+	"html/template"
 	"io"
 	"mime"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 var log logrus.FieldLogger = logrus.StandardLogger()
 var cfg *Config
+var templ *template.Template
 
 // Database is some sort of database that stores FileInfo
 type Database interface {
@@ -30,6 +32,8 @@ type Config struct {
 	AllowedMimeTypes []string
 	BasePath         string
 	BaseURL          string
+	UploadPage       bool
+	ExposedPassword  string
 	NewFileName      func() string
 	DB               Database
 	Authenticate     func(*http.Request) bool
@@ -64,13 +68,34 @@ func New(conf *Config) http.Handler {
 					"ip":         r.RemoteAddr,
 					"user-agent": r.UserAgent(),
 				})))
+			w.Header().Add("Access-Control-Allow-Origin", "*")
 			next.ServeHTTP(w, r)
 		})
 	})
 	r.Post("/upload", upload)
 	r.Get("/:file", serveFile)
-	r.Get("/", http.NotFound)
+	if cfg.UploadPage {
+		templ = template.Must(template.ParseFiles("upload.html"))
+		r.Get("/", uploadPage)
+	} else {
+		r.Get("/", http.NotFound)
+	}
+
 	return r
+}
+
+func uploadPage(w http.ResponseWriter, r *http.Request) {
+	data := struct {
+		Key     string
+		BaseURL string
+	}{
+		Key:     cfg.ExposedPassword,
+		BaseURL: cfg.BaseURL,
+	}
+	if err := templ.Execute(w, data); err != nil {
+		r.Context().Value("logger").(logrus.FieldLogger).
+			WithError(err).Error("cannot execute template")
+	}
 }
 
 func upload(w http.ResponseWriter, r *http.Request) {
@@ -80,9 +105,11 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Authenticated", http.StatusUnauthorized)
 		return
 	}
+	l.Debug(r.Header)
 	err := r.ParseMultipartForm(1024 * 1024 * 64)
 	if err != nil {
 		l.WithError(err).Error("cannot read multi part form")
+
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}

@@ -36,7 +36,9 @@ func main() {
 			}
 			return false
 		},
-		Logger: logrus.StandardLogger(),
+		UploadPage:      true,
+		ExposedPassword: cfg.Password,
+		Logger:          logrus.StandardLogger(),
 		NewFileName: func() string {
 			return filehost.RandString(cfg.NameLength)
 		},

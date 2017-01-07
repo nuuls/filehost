@@ -10,57 +10,54 @@
         function upload() {
             var file = $('#testFile').prop('files')[0];
             var filepath = $('#testFile').prop("files")[0]['name'];
-            var type = $("#testFile").prop('files')[0].type.split("/")[1];
             console.log(file);
-            $.ajax({
-                url: "{{.BaseURL}}upload?key={{.Key}}",
-                type: "POST",
-                data: file,
-                headers: {
-                    "file-type": type
-                },
-                processData: false,
-                xhr: function() {
-                    var xhr = $.ajaxSettings.xhr();
-                    if (xhr.upload) {
-                        xhr.upload.addEventListener('progress', function(event) {
-                            var percent = 0;
-                            var position = event.loaded || event.position;
-                            var total = event.total;
-                            if (event.lengthComputable) {
-                                percent = Math.ceil(position / total * 100);
-                            }
-                            //update progressbar
-                            $("#progress").html(percent + "%");
-                            console.log(percent);
-                        }, true);
+            var formData = new FormData();
+            formData.append("file", file);
+            var xhr = new XMLHttpRequest();
+            if (xhr.upload) {
+                xhr.upload.addEventListener('progress', function(event) {
+                    var percent = 0;
+                    var position = event.loaded || event.position;
+                    var total = event.total;
+                    if (event.lengthComputable) {
+                        percent = Math.ceil(position / total * 100);
                     }
-                    return xhr;
-                },
-                success: function(msg) {
-                    console.log(msg);
-                    document.getElementById("link").innerHTML = '<a href="' + msg + '">' + msg + '</a>';
+                    //update progressbar
+                    $("#progress").html(percent + "%");
+                    console.log(percent);
+                }, true);
+            }
+            xhr.onload = function() {
+                var link = document.createElement("a")
+                link.href = xhr.response 
+                link.innerText = xhr.response
+                document.getElementById("link").appendChild(link);
+            }
+            xhr.onreadystatechange = function(ev) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status !== 200) {
+                        console.log(ev)
+                        document.getElementById("link").innerText = "error uploading file"
+                    }
                 }
-            });
+            }
+            try {
+                xhr.open("POST", "{{.BaseURL}}upload?password={{.Key}}", true);
+                xhr.send(formData);
+            } catch(err) {
+                console.log("XD", err)
+                document.getElementById("link").innerText += err 
+            }
+
         };
     </script>
     <style type="text/css">
-        #progress {
-            float: left;
-        }
-
-        #testFile {
-            float: left;
-        }
-
-        #link {
-            clear: both;
-        }
     </style>
 </head>
 
 <body>
-    <input id="testFile" type='file' onchange="upload()">
+    <input id="testFile" type="file">
+    <input type="button" id="uploadButton" value="Upload" onclick="upload()">
     <div id="progress"></div>
     <div id="link"></div>
 </body>
