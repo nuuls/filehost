@@ -1,4 +1,9 @@
 *.exe
 *.exe~
-/standalone/files
-/standalone/filehost.json
+/files
+/filehost.json
+/db
+/test
+/standalone
+/filehost2
+/vendor/golang.org

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+    <meta charset="utf-8">
+    <title>upload</title>
+    <script type="text/javascript">
+        function upload() {
+            var file = $('#testFile').prop('files')[0];
+            var filepath = $('#testFile').prop("files")[0]['name'];
+            console.log(file);
+            var formData = new FormData();
+            formData.append("file", file);
+            var xhr = new XMLHttpRequest();
+            if (xhr.upload) {
+                xhr.upload.addEventListener('progress', function(event) {
+                    var percent = 0;
+                    var position = event.loaded || event.position;
+                    var total = event.total;
+                    if (event.lengthComputable) {
+                        percent = Math.ceil(position / total * 100);
+                    }
+                    //update progressbar
+                    $("#progress").html(percent + "%");
+                    console.log(percent);
+                }, true);
+            }
+            xhr.onload = function() {
+                var link = document.createElement("a")
+                link.href = xhr.response 
+                link.innerText = xhr.response
+                document.getElementById("link").appendChild(link);
+            }
+            xhr.onreadystatechange = function(ev) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status !== 200) {
+                        console.log(ev)
+                        document.getElementById("link").innerText = "error uploading file"
+                    }
+                }
+            }
+            try {
+                xhr.open("POST", "{{.BaseURL}}upload?password={{.Key}}", true);
+                xhr.send(formData);
+            } catch(err) {
+                console.log("XD", err)
+                document.getElementById("link").innerText += err 
+            }
+
+        };
+    </script>
+    <style type="text/css">
+    </style>
+</head>
+
+<body>
+    <input id="testFile" type="file">
+    <input type="button" id="uploadButton" value="Upload" onclick="upload()">
+    <div id="progress"></div>
+    <div id="link"></div>
+</body>
+
+</html>

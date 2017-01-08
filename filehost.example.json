@@ -1,0 +1,13 @@
+{
+    "Host": ":7494",
+    "AllowedMimeTypes": [
+        "image/*",
+        "audio/*",
+        "video/*"
+    ],
+    "BasePath": "./files",
+    "Password": "xd",
+    "MasterPassword": "xdddddd",
+    "BaseURL": "https://i.nuuls.com/",
+    "NameLength": 5
+}
