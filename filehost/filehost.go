@@ -4,7 +4,6 @@ import (
 	"context"
 	"html/template"
 	"io"
-	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -54,6 +53,7 @@ type FileInfo struct {
 
 // New initializes a http Handler and returns it
 func New(conf *Config) http.Handler {
+	go ratelimit()
 	cfg = conf
 	log = cfg.Logger
 	err := os.MkdirAll(cfg.BasePath, 644)
@@ -105,11 +105,15 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Authenticated", http.StatusUnauthorized)
 		return
 	}
+	if ratelimited(r.RemoteAddr) {
+		l.Warning("ratelimited")
+		http.Error(w, "Rate Limit Exceeded", 429)
+		return
+	}
 	l.Debug(r.Header)
 	err := r.ParseMultipartForm(1024 * 1024 * 64)
 	if err != nil {
 		l.WithError(err).Error("cannot read multi part form")
-
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -142,22 +146,21 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			l.Debug(r.Header)
 			l.Debug(h.Header)
 			mimeType := h.Header.Get("Content-Type")
-			log.Info(mimeType)
+			if mimeType == octetStream {
+				mimeType = "text/plain"
+			}
+			l = l.WithField("mime-type", mimeType)
 			if !whiteListed(cfg.AllowedMimeTypes, mimeType) {
-				l.WithField("mime-type", mimeType).Warning("mime type not allowed")
-				http.Error(w, "Forbidden", 403)
+				l.Warning("mime type not allowed")
+				http.Error(w, "Unsupported Media Type", 415)
 				return
 			}
-			extensions, err := mime.ExtensionsByType(mimeType)
-			extension := ".png"
-			if len(extensions) < 1 || err != nil {
-				l.WithError(err).Warning("no extension found, sniffing mime type...")
-				// TODO: sniff for mime type
-			} else {
-				extension = extensions[0]
+			extension := ExtensionFromMime(mimeType)
+			if extension != "" {
+				extension = "." + extension
 			}
+
 			fullName := name + extension
-			// TODO: check mime type and append file extension if needed
 			dstPath := filepath.Join(cfg.BasePath, fullName)
 			// TODO: check if file exists
 			dst, err := os.Create(dstPath)
@@ -197,12 +200,18 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 	l := r.Context().Value("logger").(logrus.FieldLogger)
 	name := chi.URLParam(r, "file")
 	l = l.WithField("file", name)
+	if ratelimited(r.RemoteAddr) {
+		l.Warning("ratelimited")
+		http.Error(w, "Rate Limit Exceeded", 429)
+		return
+	}
 	file, err := os.Open(filepath.Join(cfg.BasePath, name))
 	if err != nil {
 		l.WithError(err).Warning("not found")
 		http.Error(w, "404 Not Found", 404)
 		return
 	}
+	rateAdd(r.RemoteAddr)
 	spl := strings.Split(name, ".")
 	id := spl[0]
 	extension := ""

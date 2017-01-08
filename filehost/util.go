@@ -62,3 +62,75 @@ func whiteListed(allowed []string, input string) bool {
 	}
 	return false
 }
+
+func ExtensionFromMime(mimeType string) string {
+	spl := strings.Split(mimeType, "/")
+	if len(spl) < 2 {
+		return ""
+	}
+	s1, s2 := spl[0], spl[1]
+	switch s1 {
+	case "audio":
+		switch s2 {
+		case "wav", "x-wav":
+			return "wav"
+		default:
+			return "mp3"
+		}
+	case "image":
+		switch s2 {
+		case "bmp", "x-windows-bmp":
+			return "bmp"
+		case "gif":
+			return "gif"
+		case "x-icon":
+			return "ico"
+		case "jpeg", "pjpeg":
+			return "jpeg"
+		case "tiff", "x-tiff":
+			return "tif"
+		default:
+			return "png"
+		}
+	case "text":
+		switch s2 {
+		case "html":
+			return "html"
+		case "css":
+			return "css"
+		case "javascript":
+			return "js"
+		case "richtext":
+			return "rtf"
+		default:
+			return "txt"
+		}
+	case "application":
+		switch s2 {
+		case "json":
+			return "json"
+		case "x-gzip":
+			return "gz"
+		case "javascript", "x-javascript", "ecmascript":
+			return "js"
+		case "pdf":
+			return "pdf"
+		case "xml":
+			return "xml"
+		case "x-compressed", "x-zip-compressed", "zip":
+			return "zip"
+		}
+	case "video":
+		switch s2 {
+		case "avi":
+			return "avi"
+		case "quicktime":
+			return "mov"
+		default:
+			return "mp4"
+		}
+	default:
+		return "txt"
+	}
+	return "txt"
+}
