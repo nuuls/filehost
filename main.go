@@ -68,6 +68,8 @@ func main() {
 				r.RemoteAddr = ip
 			}
 			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "*")
+			w.Header().Set("Access-Control-Allow-Headers", "*")
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(204)
 				return
