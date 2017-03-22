@@ -68,7 +68,6 @@ func New(conf *Config) http.Handler {
 					"ip":         r.RemoteAddr,
 					"user-agent": r.UserAgent(),
 				})))
-			w.Header().Add("Access-Control-Allow-Origin", "*")
 			next.ServeHTTP(w, r)
 		})
 	})

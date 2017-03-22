@@ -67,6 +67,11 @@ func main() {
 			if ip := r.Header.Get("Cf-Connecting-Ip"); ip != "" {
 				r.RemoteAddr = ip
 			}
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(204)
+				return
+			}
 			next.ServeHTTP(w, r)
 		})
 	})
