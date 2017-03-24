@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -210,6 +211,7 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "404 Not Found", 404)
 		return
 	}
+	defer file.Close()
 	rateAdd(r.RemoteAddr)
 	spl := strings.Split(name, ".")
 	id := spl[0]
@@ -260,14 +262,11 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 			mimeType = "text/plain"
 		}
 	}
-	if r.URL.Query().Get("download") != "" {
+	if dl, _ := strconv.ParseBool(r.URL.Query().Get("download")); dl {
 		mimeType = octetStream
 	}
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Content-Type", mimeType)
 
-	_, err = io.Copy(w, file)
-	if err != nil {
-		l.WithError(err).Error("cannot serve file")
-	}
+	http.ServeContent(w, r, "", time.Time{}, file)
 }
