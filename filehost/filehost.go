@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"mime"
+
 	"github.com/pressly/chi"
 	"github.com/sirupsen/logrus"
 )
@@ -146,7 +148,15 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			l.Debug(r.Header)
 			l.Debug(h.Header)
 			mimeType := h.Header.Get("Content-Type")
-			if mimeType == octetStream {
+			if !whiteListed(cfg.AllowedMimeTypes, mimeType) {
+				spl := strings.Split(name, ".")
+				if len(spl) > 1 {
+					ext := spl[len(spl)-1]
+					mimeType = mime.TypeByExtension("." + ext)
+					l.WithField("mime-type", mimeType).Debug("type from ext")
+				}
+			}
+			if mimeType == octetStream || mimeType == "" {
 				mimeType = "text/plain"
 			}
 			l = l.WithField("mime-type", mimeType)
