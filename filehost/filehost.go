@@ -149,7 +149,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			l.Debug(h.Header)
 			mimeType := h.Header.Get("Content-Type")
 			if !whiteListed(cfg.AllowedMimeTypes, mimeType) {
-				spl := strings.Split(name, ".")
+				spl := strings.Split(h.Filename, ".")
 				if len(spl) > 1 {
 					ext := spl[len(spl)-1]
 					mimeType = mime.TypeByExtension("." + ext)
