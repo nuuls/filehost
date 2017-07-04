@@ -209,6 +209,7 @@ const octetStream = "application/octet-stream"
 func serveFile(w http.ResponseWriter, r *http.Request) {
 	l := r.Context().Value("logger").(logrus.FieldLogger)
 	name := chi.URLParam(r, "file")
+	name = filepath.Base(name)
 	l = l.WithField("file", name)
 	if ratelimited(r.RemoteAddr) {
 		l.Warning("ratelimited")
