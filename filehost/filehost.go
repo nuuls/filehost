@@ -276,6 +276,9 @@ func serveFile(w http.ResponseWriter, r *http.Request) {
 			mimeType = "text/plain"
 		}
 	}
+	if strings.HasPrefix(mimeType, "text") {
+		mimeType += "; charset=utf-8"
+	}
 	if dl, _ := strconv.ParseBool(r.URL.Query().Get("download")); dl {
 		mimeType = octetStream
 	}
