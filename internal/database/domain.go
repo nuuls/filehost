@@ -4,8 +4,9 @@ import "gorm.io/gorm"
 
 type Domain struct {
 	gorm.Model
-	Owner            Account
+	OwnerID          uint
+	Owner            *Account
 	Domain           string
 	AccessRequired   bool
-	AllowedMimeTypes []string
+	AllowedMimeTypes []string `gorm:"serializer:json"`
 }
