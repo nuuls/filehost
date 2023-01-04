@@ -1,0 +1,37 @@
+i.nuuls v2
+
+User accounts
+	id int
+	created_at timestamp
+	username string
+	password string
+	key string
+	account_status string (free, premium)
+	default_expiry int
+	default_domain int
+
+Uploads
+	id int
+	user_id int
+	created_at timestamp
+	expires_at timestamp
+	name string
+	extension string
+	mime_type string
+	domain id
+
+Domains
+	id int
+	user_id int
+	domain string
+	access_required bool
+	allowed_mime_types JSONP
+
+DomainAccess
+	id int
+	domain_id int
+	user_id int
+
+Assets stored on CF R2
+
+Custom domains
