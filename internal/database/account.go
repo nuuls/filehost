@@ -24,3 +24,12 @@ func (db *Database) CreateAccount(acc Account) (*Account, error) {
 	}
 	return &acc, nil
 }
+
+func (db *Database) GetAccountByAPIKey(key string) (*Account, error) {
+	acc := &Account{}
+	res := db.db.First(acc, "api_key = ?", key)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return acc, nil
+}

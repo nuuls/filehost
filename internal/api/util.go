@@ -7,19 +7,28 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 const (
 	ErrInvalidJSON = "Invalid JSON"
 )
 
-func (a *API) writeError(w http.ResponseWriter, code int, message string, data interface{}) {
-	a.writeJSON(w, code, map[string]interface{}{
+const MimeTypeOctetStream = "application/octet-stream"
+
+func (a *API) writeError(w http.ResponseWriter, code int, message string, data ...interface{}) {
+	out := map[string]interface{}{
 		"statusCode": code,
 		"status":     http.StatusText(code),
 		"message":    message,
-		"data":       data,
-	})
+	}
+	if len(data) == 1 {
+
+		out["data"] = data[0]
+	} else if len(data) > 1 {
+		out["data"] = data
+	}
+	a.writeJSON(w, code, out)
 }
 
 func (a *API) writeJSON(w http.ResponseWriter, code int, data interface{}) {
@@ -47,10 +56,127 @@ func readJSON[T interface{}](rd io.Reader) (*T, error) {
 }
 
 func generateAPIKey() string {
-	bs := make([]byte, 12)
+	bs := make([]byte, 16)
 	_, err := rand.Read(bs)
 	if err != nil {
 		panic(err)
 	}
 	return hex.EncodeToString(bs)
+}
+
+func getFromContext[T interface{}](r *http.Request, key interface{}) *T {
+	val := r.Context().Value(key)
+	if val == nil {
+		return nil
+	}
+	out := val.(T)
+	return &out
+}
+
+func mustGetFromContext[T interface{}](r *http.Request, key interface{}) T {
+	val := getFromContext[T](r, key)
+	if val == nil {
+		panic("Failed to get context value")
+	}
+	return *val
+}
+
+func whiteListed(allowed []string, input string) bool {
+	spl := strings.Split(input, "/")
+	if len(spl) < 2 {
+		return false
+	}
+	s1, s2 := spl[0], spl[1]
+	for _, a := range allowed {
+		if input == a {
+			return true
+		}
+		spl := strings.Split(a, "/")
+		if len(spl) < 2 {
+			panic("Invalid mime type in allow list")
+		}
+		passed := 0
+		if spl[0] == "*" || spl[0] == s1 {
+			passed++
+		}
+		if spl[1] == "*" || spl[1] == s2 {
+			passed++
+		}
+		if passed > 1 {
+			return true
+		}
+	}
+	return false
+}
+
+func ExtensionFromMime(mimeType string) string {
+	spl := strings.Split(mimeType, "/")
+	if len(spl) < 2 {
+		return ""
+	}
+	s1, s2 := spl[0], spl[1]
+	switch s1 {
+	case "audio":
+		switch s2 {
+		case "wav", "x-wav":
+			return "wav"
+		default:
+			return "mp3"
+		}
+	case "image":
+		switch s2 {
+		case "bmp", "x-windows-bmp":
+			return "bmp"
+		case "gif":
+			return "gif"
+		case "x-icon":
+			return "ico"
+		case "jpeg", "pjpeg":
+			return "jpeg"
+		case "tiff", "x-tiff":
+			return "tif"
+		default:
+			return "png"
+		}
+	case "text":
+		switch s2 {
+		case "html":
+			return "html"
+		case "css":
+			return "css"
+		case "javascript":
+			return "js"
+		case "richtext":
+			return "rtf"
+		default:
+			return "txt"
+		}
+	case "application":
+		switch s2 {
+		case "json":
+			return "json"
+		case "x-gzip":
+			return "gz"
+		case "javascript", "x-javascript", "ecmascript":
+			return "js"
+		case "pdf":
+			return "pdf"
+		case "xml":
+			return "xml"
+		case "x-compressed", "x-zip-compressed", "zip":
+			return "zip"
+		}
+	case "video":
+		switch s2 {
+		case "avi":
+			return "avi"
+		case "quicktime":
+			return "mov"
+		default:
+			return "mp4"
+		}
+	default:
+		return "txt"
+	}
+	return "txt"
 }

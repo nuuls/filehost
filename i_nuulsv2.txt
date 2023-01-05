@@ -35,3 +35,9 @@ DomainAccess
 Assets stored on CF R2
 
 Custom domains
+
+Required for account mvp:
+	login endpoint
+	session token (just use api key for now?)
+	auth middleware
+	create upload entry on upload
