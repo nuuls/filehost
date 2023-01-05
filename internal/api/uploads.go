@@ -22,13 +22,14 @@ func (a *API) getUploads(w http.ResponseWriter, r *http.Request) {
 		a.writeError(w, 500, "Failed to get uploads", err.Error())
 		return
 	}
-	a.writeJSON(w, 200, map[string]interface{}{
-		"data": uploads,
+	a.writeJSON(w, 200, PaginatedResponse{
+		Total: -1, // TODO: fix
+		Data:  uploads,
 	})
 }
 
 func (a *API) upload(w http.ResponseWriter, r *http.Request) {
-	acc := getFromContext[*database.Account](r, ContextKeyAccount)
+	acc := getAccount(r)
 	l := a.log
 	defer r.Body.Close()
 
@@ -99,12 +100,16 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	l.Info("uploaded to ", fileURL)
 
 	if acc != nil {
+		domainID := a.cfg.Config.DefaultDomainID
+		if acc.DefaultDomainID != nil {
+			domainID = *acc.DefaultDomainID
+		}
 		_, err := a.db.CreateUpload(database.Upload{
-			OwnerID:   &(**acc).ID,
+			OwnerID:   &acc.ID,
 			ExpiresAt: time.Now().Add(time.Hour * 24 * 365 * 100), // TODO: get from settings or default
 			Filename:  fullName,
 			MimeType:  mimeType,
-			DomainID:  0, // TODO: get from settings or default
+			DomainID:  domainID,
 		})
 		if err != nil {
 			l.WithError(err).Error("Failed to insert upload into DB")
@@ -115,7 +120,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 			ExpiresAt: time.Now().Add(time.Hour * 24 * 365 * 100), // TODO: get from default
 			Filename:  fullName,
 			MimeType:  mimeType,
-			DomainID:  0, // TODO: get from default
+			DomainID:  a.cfg.Config.DefaultDomainID,
 		})
 		if err != nil {
 			l.WithError(err).Error("Failed to insert upload into DB")

@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/nuuls/filehost/internal/database"
 )
 
 const (
@@ -79,6 +81,18 @@ func mustGetFromContext[T interface{}](r *http.Request, key interface{}) T {
 		panic("Failed to get context value")
 	}
 	return *val
+}
+
+func mustGetAccount(r *http.Request) *database.Account {
+	return mustGetFromContext[*database.Account](r, ContextKeyAccount)
+}
+
+func getAccount(r *http.Request) *database.Account {
+	acc := getFromContext[*database.Account](r, ContextKeyAccount)
+	if acc == nil {
+		return nil
+	}
+	return *acc
 }
 
 func whiteListed(allowed []string, input string) bool {
@@ -179,4 +193,9 @@ func ExtensionFromMime(mimeType string) string {
 		return "txt"
 	}
 	return "txt"
+}
+
+type PaginatedResponse struct {
+	Total int         `json:"total"`
+	Data  interface{} `json:"data"`
 }

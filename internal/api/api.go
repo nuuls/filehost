@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/nuuls/filehost/internal/config"
 	"github.com/nuuls/filehost/internal/database"
 	"github.com/sirupsen/logrus"
 )
@@ -23,13 +24,14 @@ type API struct {
 }
 
 type Config struct {
-	DB   *database.Database
-	Log  logrus.FieldLogger
-	Addr string
+	DB     *database.Database
+	Log    logrus.FieldLogger
+	Config *config.Config
 }
 
 func (a *API) Run() error {
-	return http.ListenAndServe(a.cfg.Addr, a.newRouter())
+	a.log.WithField("addr", a.cfg.Config.Addr).Info("Starting api")
+	return http.ListenAndServe(a.cfg.Config.Addr, a.newRouter())
 }
 
 func (a *API) newRouter() chi.Router {
@@ -40,6 +42,13 @@ func (a *API) newRouter() chi.Router {
 
 		r.With(a.authMiddleware).Get("/uploads", a.getUploads)
 		r.With(a.optionalAuthMiddleware).Post("/uploads", a.upload)
+
+		r.Route("/domains", func(r chi.Router) {
+			r.Use(a.authMiddleware)
+
+			r.Post("/", a.createDomain)
+			r.Get("/", a.getDomains)
+		})
 	})
 
 	return r

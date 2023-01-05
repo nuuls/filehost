@@ -9,9 +9,12 @@ type Database struct {
 	db *gorm.DB
 }
 
-func New() (*Database, error) {
-	dsn := "host=localhost user=postgres password=postgrespw dbname=postgres port=49153 sslmode=disable"
-	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+type Config struct {
+	DSN string
+}
+
+func New(cfg *Config) (*Database, error) {
+	conn, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {

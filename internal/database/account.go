@@ -13,7 +13,7 @@ type Account struct {
 	APIKey          string
 	Status          string
 	DefaultExpiry   *time.Duration
-	DefaultDomainID uint
+	DefaultDomainID *uint
 	DefaultDomain   *Domain
 }
 
