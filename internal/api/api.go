@@ -41,15 +41,3 @@ func (a *API) newRouter() chi.Router {
 
 	return r
 }
-
-func (a *API) signup(w http.ResponseWriter, r *http.Request) {
-	acc, err := a.db.CreateAccount(database.Account{
-		Username: "nuuls",
-		Password: "password",
-	})
-	if err != nil {
-		a.writeError(w, 500, "Failed to create account", err.Error())
-		return
-	}
-	a.writeJSON(w, 201, acc)
-}

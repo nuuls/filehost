@@ -8,7 +8,7 @@ import (
 
 type Account struct {
 	gorm.Model
-	Username        string
+	Username        string `gorm:"unique"`
 	Password        string
 	APIKey          string
 	Status          string
