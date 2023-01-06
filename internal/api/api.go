@@ -38,6 +38,7 @@ func (a *API) newRouter() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/v1", func(r chi.Router) {
+		r.Use(corsMiddleware)
 		r.Post("/signup", a.signup)
 
 		r.With(a.authMiddleware).Get("/uploads", a.getUploads)

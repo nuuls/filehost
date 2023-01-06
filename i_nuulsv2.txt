@@ -41,3 +41,5 @@ Required for account mvp:
 	session token (just use api key for now?)
 	auth middleware
 	create upload entry on upload
+	signup frontend
+	get uploads frontend
