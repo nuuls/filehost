@@ -12,6 +12,15 @@ type createDomainRequest struct {
 	AllowedMimeTypes []string
 }
 
+type Domain struct {
+	ID               int                   `json:"id"`
+	Owner            *Account              `json:"owner"`
+	Domain           string                `json:"domain"`
+	AccessRequired   bool                  `json:"accessRequired"`
+	AllowedMimeTypes []string              `json:"allowedMimeTypes"`
+	Status           database.DomainStatus `json:"status"`
+}
+
 func (a *API) createDomain(w http.ResponseWriter, r *http.Request) {
 	acc := mustGetAccount(r)
 	data, err := readJSON[createDomainRequest](r.Body)

@@ -15,6 +15,26 @@ import (
 	"github.com/nuuls/filehost/internal/database"
 )
 
+type Upload struct {
+	ID        uint      `json:"id"`
+	Owner     *Account  `json:"owner"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	Filename  string    `json:"filename"`
+	MimeType  string    `json:"mimeType"`
+	Domain    Domain    `json:"domain"`
+}
+
+func ToUpload(d *database.Upload) *Upload {
+	u := &Upload{}
+	u.ID = d.ID
+	// u.Owner.From(d.Owner)
+	u.ExpiresAt = d.ExpiresAt
+	u.Filename = d.Filename
+	u.MimeType = d.MimeType
+	// u.Domain.From(d.Domain)
+	return u
+}
+
 func (a *API) getUploads(w http.ResponseWriter, r *http.Request) {
 	acc := mustGetFromContext[*database.Account](r, ContextKeyAccount)
 	uploads, err := a.db.GetUploadsByAccount(acc.ID, 25, 0)
@@ -24,7 +44,7 @@ func (a *API) getUploads(w http.ResponseWriter, r *http.Request) {
 	}
 	a.writeJSON(w, 200, PaginatedResponse{
 		Total: -1, // TODO: fix
-		Data:  uploads,
+		Data:  Map(uploads, ToUpload),
 	})
 }
 

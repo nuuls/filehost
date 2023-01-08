@@ -211,3 +211,11 @@ func corsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func Map[T interface{}, O interface{}](arr []T, fn func(T) O) []O {
+	out := make([]O, len(arr))
+	for i, item := range arr {
+		out[i] = fn(item)
+	}
+	return out
+}

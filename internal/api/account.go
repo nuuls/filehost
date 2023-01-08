@@ -12,7 +12,7 @@ type signupRequest struct {
 	Password string
 }
 
-type signupResponse struct {
+type Account struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	APIKey   string `json:"apiKey"`
@@ -34,7 +34,16 @@ func (a *API) signup(w http.ResponseWriter, r *http.Request) {
 		a.writeError(w, 500, "Failed to create account", err.Error())
 		return
 	}
-	a.writeJSON(w, 201, signupResponse{
+	a.writeJSON(w, 201, Account{
+		ID:       acc.ID,
+		Username: acc.Username,
+		APIKey:   acc.APIKey,
+	})
+}
+
+func (a *API) getAccount(w http.ResponseWriter, r *http.Request) {
+	acc := mustGetAccount(r)
+	a.writeJSON(w, 200, Account{
 		ID:       acc.ID,
 		Username: acc.Username,
 		APIKey:   acc.APIKey,

@@ -13,7 +13,8 @@ type Config struct {
 	LogLevel         logrus.Level `default:"debug"`
 	PostgresDSN      string       `default:"host=localhost user=postgres password=postgrespw dbname=postgres port=49153 sslmode=disable"`
 	StorageBucketURI string
-	DefaultDomainID  uint `default:"1"`
+	FallbackFilePath string `default:"./files"`
+	DefaultDomainID  uint   `default:"1"`
 }
 
 func MustLoad() *Config {
