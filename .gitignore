@@ -8,3 +8,5 @@
 /filehost2
 /vendor/golang.org
 /filehost-clean
+/filehost-linux
+/deploy.sh

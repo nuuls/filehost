@@ -35,3 +35,12 @@ func (db *Database) GetDomains(limit, offset int) ([]*Domain, error) {
 	}
 	return out, nil
 }
+
+func (db *Database) GetDomainByID(id uint) (*Domain, error) {
+	out := &Domain{}
+	res := db.db.First(&out, "id = ?", id)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return out, nil
+}

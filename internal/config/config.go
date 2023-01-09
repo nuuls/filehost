@@ -23,7 +23,7 @@ func MustLoad() *Config {
 		log.Println("Error loading .env file", err)
 	}
 	cfg := &Config{}
-	err = envconfig.Process("FH", cfg)
+	err = envconfig.Process("", cfg)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -50,6 +51,11 @@ func (a *API) getUploads(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	acc := getAccount(r)
+	domain, err := a.db.GetDomainByID(a.cfg.Config.DefaultDomainID)
+	if err != nil {
+		a.writeError(w, 500, "Failed to load default config")
+		return
+	}
 	l := a.log
 	defer r.Body.Close()
 
@@ -70,9 +76,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	l.Info("uploading...")
 	mimeType := mpHeader.Header.Get("Content-Type")
 
-	allowedMimeTypes := []string{"*/*"}
-
-	if !whiteListed(allowedMimeTypes, mimeType) {
+	if !whiteListed(domain.AllowedMimeTypes, mimeType) {
 		spl := strings.Split(mpHeader.Filename, ".")
 		if len(spl) > 1 {
 			ext := spl[len(spl)-1]
@@ -87,7 +91,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 
 	l = l.WithField("mime-type", mimeType)
 
-	if !whiteListed(allowedMimeTypes, mimeType) {
+	if !whiteListed(domain.AllowedMimeTypes, mimeType) {
 		l.Warning("mime type not allowed")
 		http.Error(w, "Unsupported Media Type", 415)
 		return
@@ -114,7 +118,8 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileURL := "http://localhost:7417/" + fullName
+	// TODO: fix localhost
+	fileURL := fmt.Sprintf("https://%s/%s", domain.Domain, fullName)
 
 	w.Write([]byte(fileURL))
 	l.Info("uploaded to ", fileURL)

@@ -53,6 +53,7 @@ func (a *API) newRouter() chi.Router {
 		})
 	})
 
+	r.With(a.optionalAuthMiddleware).Post("/upload", a.upload)
 	r.Get("/{filename}", a.serveFile)
 
 	return r
