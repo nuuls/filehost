@@ -27,7 +27,10 @@ func (db *Database) CreateUpload(upload Upload) (*Upload, error) {
 
 func (db *Database) GetUploadsByAccount(accountID uint, limit, offset int) ([]*Upload, error) {
 	out := []*Upload{}
-	res := db.db.Order("id DESC").Limit(limit).Offset(offset).Find(&out, "owner_id = ?", accountID)
+	res := db.db.
+		Joins("Domain").
+		Order("id DESC").Limit(limit).Offset(offset).
+		Find(&out, "uploads.owner_id = ?", accountID)
 	if res.Error != nil {
 		return nil, res.Error
 	}

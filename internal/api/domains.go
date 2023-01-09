@@ -13,12 +13,23 @@ type createDomainRequest struct {
 }
 
 type Domain struct {
-	ID               int                   `json:"id"`
+	ID               uint                  `json:"id"`
 	Owner            *Account              `json:"owner"`
 	Domain           string                `json:"domain"`
 	AccessRequired   bool                  `json:"accessRequired"`
 	AllowedMimeTypes []string              `json:"allowedMimeTypes"`
 	Status           database.DomainStatus `json:"status"`
+}
+
+func ToDomain(d *database.Domain) *Domain {
+	return &Domain{
+		ID: d.ID,
+		// TODO: owner
+		Domain:           d.Domain,
+		AccessRequired:   d.AccessRequired,
+		AllowedMimeTypes: d.AllowedMimeTypes,
+		Status:           d.Status,
+	}
 }
 
 func (a *API) createDomain(w http.ResponseWriter, r *http.Request) {

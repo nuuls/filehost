@@ -32,7 +32,7 @@ func ToUpload(d *database.Upload) *Upload {
 	u.ExpiresAt = d.ExpiresAt
 	u.Filename = d.Filename
 	u.MimeType = d.MimeType
-	// u.Domain.From(d.Domain)
+	u.Domain = *ToDomain(&d.Domain)
 	return u
 }
 
