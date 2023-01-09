@@ -33,3 +33,12 @@ func (db *Database) GetAccountByAPIKey(key string) (*Account, error) {
 	}
 	return acc, nil
 }
+
+func (db *Database) GetAccountByUsername(username string) (*Account, error) {
+	acc := &Account{}
+	res := db.db.First(acc, "username = ?", username)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return acc, nil
+}

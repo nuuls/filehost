@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/nuuls/filehost/internal/database"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -25,11 +26,15 @@ func (a *API) writeError(w http.ResponseWriter, code int, message string, data .
 		"message":    message,
 	}
 	if len(data) == 1 {
-
 		out["data"] = data[0]
 	} else if len(data) > 1 {
 		out["data"] = data
 	}
+	a.log.WithFields(logrus.Fields{
+		"statusCode": code,
+		"message":    message,
+		"data":       data,
+	}).Warning("Responding with error")
 	a.writeJSON(w, code, out)
 }
 
