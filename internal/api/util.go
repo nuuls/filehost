@@ -4,9 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/nuuls/filehost/internal/database"
@@ -223,4 +225,14 @@ func Map[T interface{}, O interface{}](arr []T, fn func(T) O) []O {
 		out[i] = fn(item)
 	}
 	return out
+}
+
+var usernameRegex = regexp.MustCompile(`^\w{3,20}$`)
+
+func sanitizeUsername(username string) (string, error) {
+	username = strings.TrimSpace(strings.ToLower(username))
+	if !usernameRegex.MatchString(username) {
+		return "", errors.New("Username is not allowed")
+	}
+	return username, nil
 }

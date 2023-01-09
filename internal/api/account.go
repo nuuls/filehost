@@ -24,9 +24,14 @@ func (a *API) signup(w http.ResponseWriter, r *http.Request) {
 		a.writeError(w, 400, ErrInvalidJSON, err.Error())
 		return
 	}
+	username, err := sanitizeUsername(reqData.Username)
+	if err != nil {
+		a.writeError(w, 400, err.Error())
+		return
+	}
 	password, err := bcrypt.GenerateFromPassword([]byte(reqData.Password), bcrypt.DefaultCost)
 	acc, err := a.db.CreateAccount(database.Account{
-		Username: reqData.Username,
+		Username: username,
 		Password: string(password),
 		APIKey:   generateAPIKey(),
 	})
@@ -47,7 +52,12 @@ func (a *API) login(w http.ResponseWriter, r *http.Request) {
 		a.writeError(w, 400, ErrInvalidJSON, err.Error())
 		return
 	}
-	acc, err := a.db.GetAccountByUsername(reqData.Username)
+	username, err := sanitizeUsername(reqData.Username)
+	if err != nil {
+		a.writeError(w, 400, err.Error())
+		return
+	}
+	acc, err := a.db.GetAccountByUsername(username)
 	if err != nil {
 		a.writeError(w, 404, "User not found")
 		return
