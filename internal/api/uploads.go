@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nuuls/filehost/filehost"
 	"github.com/nuuls/filehost/internal/database"
 )
 
@@ -70,7 +69,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 		l.Error(err)
 	}
 
-	name := filehost.RandString(5)
+	name := RandomString(5)
 
 	l = l.WithField("file", name)
 	l.Info("uploading...")

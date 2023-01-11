@@ -7,13 +7,19 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	rand2 "math/rand"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/nuuls/filehost/internal/database"
 	"github.com/sirupsen/logrus"
 )
+
+func init() {
+	rand2.Seed(time.Now().UnixNano())
+}
 
 const (
 	ErrInvalidJSON = "Invalid JSON"
@@ -235,4 +241,13 @@ func sanitizeUsername(username string) (string, error) {
 		return "", errors.New("Username is not allowed")
 	}
 	return username, nil
+}
+
+func RandomString(length int) string {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+	out := make([]byte, length)
+	for i := 0; i < length; i++ {
+		out[i] = letters[rand2.Intn(len(letters))]
+	}
+	return string(out)
 }
