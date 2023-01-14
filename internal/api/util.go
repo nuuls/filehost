@@ -233,6 +233,13 @@ func Map[T interface{}, O interface{}](arr []T, fn func(T) O) []O {
 	return out
 }
 
+func Or[T interface{}](val *T, fallback T) T {
+	if val != nil {
+		return *val
+	}
+	return fallback
+}
+
 var usernameRegex = regexp.MustCompile(`^\w{3,20}$`)
 
 func sanitizeUsername(username string) (string, error) {

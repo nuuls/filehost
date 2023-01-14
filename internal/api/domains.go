@@ -2,7 +2,9 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi"
 	"github.com/nuuls/filehost/internal/database"
 )
 
@@ -64,4 +66,21 @@ func (a *API) getDomains(w http.ResponseWriter, r *http.Request) {
 		Total: -1,      // TODO: fix
 		Data:  domains, // TODO: map to proper type
 	})
+}
+
+func (a *API) getDomain(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		a.writeError(w, 400, "Invalid ID", err.Error())
+		return
+	}
+	domain, err := a.db.GetDomainByID(uint(id))
+	if err != nil {
+		a.writeError(w, 500, "Failed to get domains", err.Error())
+		return
+	}
+	a.writeJSON(w, 200,
+		ToDomain(domain),
+	)
 }

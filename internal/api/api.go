@@ -51,6 +51,7 @@ func (a *API) newRouter() chi.Router {
 
 			r.Post("/", a.createDomain)
 			r.Get("/", a.getDomains)
+			r.Get("/{id}", a.getDomain)
 		})
 	})
 
