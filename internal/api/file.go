@@ -75,4 +75,10 @@ func (a *API) serveFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", mimeType)
 
 	http.ServeContent(w, r, "", time.Time{}, file)
+
+	err = a.db.IncUploadViews(name)
+	if err != nil {
+		l.WithError(err).Error("Failed to increment file views")
+		return
+	}
 }

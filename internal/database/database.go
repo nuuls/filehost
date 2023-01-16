@@ -1,8 +1,10 @@
 package database
 
 import (
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Database struct {
@@ -10,12 +12,17 @@ type Database struct {
 }
 
 type Config struct {
-	DSN string
+	DSN      string
+	Log      logrus.FieldLogger
+	LogLevel logger.LogLevel
 }
 
 func New(cfg *Config) (*Database, error) {
 	conn, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
+		Logger: logger.New(cfg.Log, logger.Config{
+			LogLevel: cfg.LogLevel,
+		}),
 	})
 	if err != nil {
 		return nil, err

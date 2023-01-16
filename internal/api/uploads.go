@@ -16,21 +16,27 @@ import (
 )
 
 type Upload struct {
-	ID        uint      `json:"id"`
-	Owner     *Account  `json:"owner"`
-	ExpiresAt time.Time `json:"expiresAt"`
-	Filename  string    `json:"filename"`
-	MimeType  string    `json:"mimeType"`
-	Domain    Domain    `json:"domain"`
+	ID           uint      `json:"id"`
+	Owner        *Account  `json:"owner"`
+	Filename     string    `json:"filename"`
+	MimeType     string    `json:"mimeType"`
+	SizeBytes    uint      `json:"sizeBytes"`
+	Domain       Domain    `json:"domain"`
+	TTLSeconds   *uint     `json:"ttlSeconds"`
+	LastViewedAt time.Time `json:"lastViewedAt"`
+	Views        uint      `json:"views"`
 }
 
 func ToUpload(d *database.Upload) *Upload {
 	u := &Upload{}
 	u.ID = d.ID
 	// u.Owner.From(d.Owner)
-	u.ExpiresAt = d.ExpiresAt
 	u.Filename = d.Filename
 	u.MimeType = d.MimeType
+	u.SizeBytes = d.SizeBytes
+	u.TTLSeconds = d.TTLSeconds
+	u.LastViewedAt = d.LastViewedAt
+	u.Views = d.Views
 	u.Domain = *ToDomain(&d.Domain)
 	return u
 }
@@ -110,7 +116,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
-	_, err = io.Copy(dst, file)
+	sizeBytes, err := io.Copy(dst, file)
 	if err != nil {
 		l.WithError(err).Error("failed to save file")
 		http.Error(w, "Internal Server Error", 500)
@@ -123,32 +129,27 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fileURL))
 	l.Info("uploaded to ", fileURL)
 
+	upload := database.Upload{
+		OwnerID:      nil,
+		UploaderIP:   r.RemoteAddr,
+		TTLSeconds:   nil,
+		SizeBytes:    uint(sizeBytes),
+		Filename:     fullName,
+		MimeType:     mimeType,
+		DomainID:     a.cfg.Config.DefaultDomainID,
+		LastViewedAt: time.Now(),
+	}
+
 	if acc != nil {
-		domainID := a.cfg.Config.DefaultDomainID
+		upload.OwnerID = &acc.ID
 		if acc.DefaultDomainID != nil {
-			domainID = *acc.DefaultDomainID
+			upload.DomainID = *acc.DefaultDomainID
 		}
-		_, err := a.db.CreateUpload(database.Upload{
-			OwnerID:   &acc.ID,
-			ExpiresAt: time.Now().Add(time.Hour * 24 * 365 * 100), // TODO: get from settings or default
-			Filename:  fullName,
-			MimeType:  mimeType,
-			DomainID:  domainID,
-		})
-		if err != nil {
-			l.WithError(err).Error("Failed to insert upload into DB")
-		}
-	} else {
-		_, err := a.db.CreateUpload(database.Upload{
-			OwnerID:   nil,
-			ExpiresAt: time.Now().Add(time.Hour * 24 * 365 * 100), // TODO: get from default
-			Filename:  fullName,
-			MimeType:  mimeType,
-			DomainID:  a.cfg.Config.DefaultDomainID,
-		})
-		if err != nil {
-			l.WithError(err).Error("Failed to insert upload into DB")
-		}
+	}
+
+	_, err = a.db.CreateUpload(upload)
+	if err != nil {
+		l.WithError(err).Error("Failed to create upload entry")
 	}
 }
 

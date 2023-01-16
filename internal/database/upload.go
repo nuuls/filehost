@@ -8,13 +8,17 @@ import (
 
 type Upload struct {
 	gorm.Model
-	OwnerID   *uint
-	Owner     *Account
-	ExpiresAt time.Time
-	Filename  string
-	MimeType  string
-	DomainID  uint
-	Domain    Domain
+	OwnerID      *uint `gorm:"index"`
+	Owner        *Account
+	UploaderIP   string
+	Filename     string `gorm:"uniqueIndex"`
+	MimeType     string
+	SizeBytes    uint
+	DomainID     uint
+	Domain       Domain
+	TTLSeconds   *uint
+	LastViewedAt time.Time `gorm:"default:now()"`
+	Views        uint      `gorm:"default:0; not null"`
 }
 
 func (db *Database) CreateUpload(upload Upload) (*Upload, error) {
@@ -35,4 +39,14 @@ func (db *Database) GetUploadsByAccount(accountID uint, limit, offset int) ([]*U
 		return nil, res.Error
 	}
 	return out, nil
+}
+
+func (db *Database) IncUploadViews(filename string) error {
+	res := db.db.Model(Upload{}).
+		Where("filename = ?", filename).
+		Updates(map[string]interface{}{
+			"views":          gorm.Expr("views + 1"),
+			"last_viewed_at": gorm.Expr("now()"),
+		})
+	return res.Error
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/nuuls/filehost/internal/config"
 	"github.com/nuuls/filehost/internal/database"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -13,8 +14,15 @@ func main() {
 	log := logrus.New()
 	log.Level = cfg.LogLevel
 
+	dbLogLevel := logger.Info
+	if cfg.LogLevel != logrus.DebugLevel {
+		dbLogLevel = logger.Error
+	}
+
 	db, err := database.New(&database.Config{
-		DSN: cfg.PostgresDSN,
+		DSN:      cfg.PostgresDSN,
+		Log:      log,
+		LogLevel: dbLogLevel,
 	})
 	if err != nil {
 		log.WithError(err).Fatal("Failed to connect to database")
