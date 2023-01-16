@@ -41,3 +41,6 @@ Required for account mvp:
 		handle previews and upload view for non-images
 
 	Backend feature parity:
+
+	Ops:
+		Copy over all old files

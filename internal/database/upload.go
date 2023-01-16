@@ -50,3 +50,12 @@ func (db *Database) IncUploadViews(filename string) error {
 		})
 	return res.Error
 }
+
+func (db *Database) GetUploadByFilename(filename string) (*Upload, error) {
+	upload := &Upload{}
+	res := db.db.First(upload, "filename = ?", filename)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return upload, nil
+}

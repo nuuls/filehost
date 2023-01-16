@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/nuuls/filehost/internal/api"
 	"github.com/nuuls/filehost/internal/config"
 	"github.com/nuuls/filehost/internal/database"
@@ -26,6 +28,17 @@ func main() {
 	})
 	if err != nil {
 		log.WithError(err).Fatal("Failed to connect to database")
+	}
+
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "import":
+			err := ImportFilesFromFS(cfg, log, db)
+			if err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
 	}
 
 	a := api.New(api.Config{

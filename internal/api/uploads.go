@@ -108,7 +108,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fullName := name + extension
-	dstPath := filepath.Join("./files", fullName)
+	dstPath := filepath.Join(a.cfg.Config.FallbackFilePath, fullName)
 	// TODO: check if file exists
 	dst, err := os.Create(dstPath)
 	if err != nil {
