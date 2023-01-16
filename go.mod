@@ -6,7 +6,6 @@ require (
 	github.com/go-chi/chi v1.5.4
 	github.com/joho/godotenv v1.4.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/pressly/chi v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.5.0
 	gorm.io/driver/postgres v1.4.6
