@@ -21,7 +21,8 @@ func New(cfg *Config) (*Database, error) {
 	conn, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger: logger.New(cfg.Log, logger.Config{
-			LogLevel: cfg.LogLevel,
+			LogLevel:                  cfg.LogLevel,
+			IgnoreRecordNotFoundError: true,
 		}),
 	})
 	if err != nil {

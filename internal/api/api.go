@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/nuuls/filehost/internal/config"
 	"github.com/nuuls/filehost/internal/database"
 	"github.com/sirupsen/logrus"
@@ -38,9 +39,10 @@ func (a *API) newRouter() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(realIPMiddleware)
+	r.Use(corsMiddleware)
+	r.Use(middleware.Logger)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Use(corsMiddleware)
 		r.Post("/signup", a.signup)
 		r.Post("/login", a.login)
 		r.With(a.authMiddleware).Get("/account", a.getAccount)

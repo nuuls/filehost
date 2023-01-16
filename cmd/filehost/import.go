@@ -23,7 +23,9 @@ func ImportFilesFromFS(cfg *config.Config, log logrus.FieldLogger, db *database.
 			WithField("total", len(entries)).
 			WithField("filename", entry.Name()).
 			WithField("progress", i*100/len(entries))
-		log.Info("Processing file")
+		if i%1000 == 0 {
+			log.Info("Processing file")
+		}
 		if entry.IsDir() {
 			continue
 		}
@@ -68,7 +70,9 @@ func ImportFilesFromFS(cfg *config.Config, log logrus.FieldLogger, db *database.
 			log.WithError(err).Error("failed to import file")
 			continue
 		}
-		log.Info("Imported file")
+		if i%1000 == 0 {
+			log.Info("Imported file")
+		}
 	}
 	return nil
 }
