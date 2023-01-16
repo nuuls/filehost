@@ -258,3 +258,13 @@ func RandomString(length int) string {
 	}
 	return string(out)
 }
+
+func realIPMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := r.Header.Get("CF-Connecting-IP")
+		if ip != "" {
+			r.RemoteAddr = ip
+		}
+		next.ServeHTTP(w, r)
+	})
+}

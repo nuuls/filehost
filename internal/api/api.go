@@ -37,7 +37,7 @@ func (a *API) Run() error {
 func (a *API) newRouter() chi.Router {
 	r := chi.NewRouter()
 
-	// TODO: add real IP middleware
+	r.Use(realIPMiddleware)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(corsMiddleware)

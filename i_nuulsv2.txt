@@ -39,9 +39,5 @@ Custom domains
 Required for account mvp:
 	Frontend feature parity:
 		handle previews and upload view for non-images
-		handle onpaste
-		add copy link button after upload
 
 	Backend feature parity:
-		store ip on uploads
-		count views on uploads
