@@ -42,6 +42,10 @@ func (a *API) signup(w http.ResponseWriter, r *http.Request) {
 		a.writeError(w, 400, err.Error())
 		return
 	}
+	if len(reqData.Password) < 8 {
+		a.writeError(w, 400, "Password must be at least 8 characters long")
+		return
+	}
 	password, err := bcrypt.GenerateFromPassword([]byte(reqData.Password), bcrypt.DefaultCost)
 	acc, err := a.db.CreateAccount(database.Account{
 		Username: username,
