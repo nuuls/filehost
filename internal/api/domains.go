@@ -36,6 +36,10 @@ func ToDomain(d *database.Domain) *Domain {
 
 func (a *API) createDomain(w http.ResponseWriter, r *http.Request) {
 	acc := mustGetAccount(r)
+	if acc.ID != 1 {
+		a.writeError(w, 403, "This endpoint is for admins only")
+		return
+	}
 	data, err := readJSON[createDomainRequest](r.Body)
 	if err != nil {
 		a.writeError(w, 400, "Failed to decode json", err.Error())
