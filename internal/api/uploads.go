@@ -56,9 +56,15 @@ func (a *API) getUploads(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	acc := getAccount(r)
-	domain, err := a.db.GetDomainByID(a.cfg.Config.DefaultDomainID)
+	var domain *database.Domain
+	var err error
+	if acc != nil && acc.DefaultDomainID != nil {
+		domain, err = a.db.GetDomainByID(*acc.DefaultDomainID)
+	} else {
+		domain, err = a.db.GetDomainByID(a.cfg.Config.DefaultDomainID)
+	}
 	if err != nil {
-		a.writeError(w, 500, "Failed to load default config")
+		a.writeError(w, 500, "Failed to load Domain config")
 		return
 	}
 	l := a.log
