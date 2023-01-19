@@ -47,6 +47,8 @@ func (a *API) writeError(w http.ResponseWriter, code int, message string, data .
 }
 
 func (a *API) writeJSON(w http.ResponseWriter, code int, data interface{}) {
+	// TODO: check if data is coming from database package and refuse to
+	// send it to the client
 	bs, err := json.Marshal(data)
 	if err != nil {
 		a.log.WithError(err).WithField("data", data).Error("Failed to encode response as json")
@@ -217,6 +219,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		w.Header().Add("Access-Control-Allow-Headers", "*")
+		w.Header().Add("Access-Control-Allow-Methods", "*")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(204)
 			return

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/nuuls/filehost/internal/database"
 )
 
@@ -174,4 +175,43 @@ func getFirstFile(r *http.Request) (*multipart.FileHeader, error) {
 		}
 	}
 	return nil, errors.New("No file attached")
+}
+
+func (a *API) deleteUpload(w http.ResponseWriter, r *http.Request) {
+	acc := getAccount(r)
+
+	filename := chi.URLParam(r, "filename")
+
+	upload, err := a.db.GetUploadByFilename(filename)
+	if err != nil {
+		a.writeError(w, 404, "Upload not found", err.Error())
+		return
+	}
+
+	// User is logged in and uploaded the file
+	hasAccess := acc != nil &&
+		upload.OwnerID != nil &&
+		*upload.OwnerID == acc.ID
+
+	// User has the same IP as uploader and file is newer than 24 hours
+	if upload.UploaderIP == r.RemoteAddr && time.Since(upload.CreatedAt) < time.Hour*24 {
+		hasAccess = true
+	}
+
+	if !hasAccess {
+		a.writeError(w, 403, "You do not have access to delete this file")
+		return
+	}
+
+	err = os.Remove(filepath.Join(a.cfg.Config.FallbackFilePath, filename))
+	if err != nil {
+		a.writeError(w, 500, "Failed to remove file", err.Error())
+		return
+	}
+	err = a.db.DeleteUpload(upload.ID)
+	if err != nil {
+		a.writeError(w, 500, "Failed to remove file database entry", err.Error())
+		return
+	}
+	a.writeJSON(w, 200, ToUpload(upload))
 }

@@ -49,6 +49,7 @@ func (a *API) newRouter() chi.Router {
 
 		r.With(a.authMiddleware).Get("/uploads", a.getUploads)
 		r.With(a.optionalAuthMiddleware).Post("/uploads", a.upload)
+		r.With(a.optionalAuthMiddleware).Delete("/uploads/{filename}", a.deleteUpload)
 
 		r.Route("/domains", func(r chi.Router) {
 			r.Use(a.authMiddleware)

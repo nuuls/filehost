@@ -59,3 +59,8 @@ func (db *Database) GetUploadByFilename(filename string) (*Upload, error) {
 	}
 	return upload, nil
 }
+
+func (db *Database) DeleteUpload(id uint) error {
+	res := db.db.Delete(&Upload{}, "id = ?", id)
+	return res.Error
+}
