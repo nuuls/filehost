@@ -1,0 +1,4 @@
+Assets stored on CF R2
+	- As main storage or only cold storage?
+	- Is it noticibly slower than reading from disk?
+	- Whats the price difference compared to disk?
