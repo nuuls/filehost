@@ -12,9 +12,10 @@ type Config struct {
 	Addr                     string       `default:":7417"`
 	LogLevel                 logrus.Level `default:"debug"`
 	PostgresDSN              string       `default:"host=localhost user=postgres password=postgrespw dbname=postgres port=49153 sslmode=disable"`
-	StorageBucketURI         string       `default:"https://d1c3b4965ac574bd84b48f950f9f7e86.r2.cloudflarestorage.com/i-nuuls-uploads"`
-	StorageBucketAccessKeyID string       `env:"STORAGE_BUCKET_ACCESS_KEY_ID"`
-	StorageBucketSecretKey   string       `env:"STORAGE_BUCKET_SECRET_KEY"`
+	StorageBucketEndpoint    string       `envconfig:"STORAGE_BUCKET_ENDPOINT"`
+	StorageBucketName        string       `envconfig:"STORAGE_BUCKET_NAME"`
+	StorageBucketAccessKeyID string       `envconfig:"STORAGE_BUCKET_ACCESS_KEY_ID"`
+	StorageBucketSecretKey   string       `envconfig:"STORAGE_BUCKET_SECRET_KEY"`
 	FallbackFilePath         string       `default:"./files"`
 	DefaultDomainID          uint         `default:"1"`
 }

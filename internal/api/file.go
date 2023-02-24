@@ -1,6 +1,7 @@
 package api
 
 import (
+	"io"
 	"mime"
 	"net/http"
 	"path/filepath"
@@ -26,7 +27,12 @@ func (a *API) serveFile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "File not found", 404)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		// TODO: fix
+		if closer, ok := file.(io.Closer); ok {
+			closer.Close()
+		}
+	}()
 	spl := strings.Split(name, ".")
 	extension := ""
 	if len(spl) > 1 {
