@@ -7,27 +7,31 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/nuuls/filehost/internal/config"
 	"github.com/nuuls/filehost/internal/database"
+	"github.com/nuuls/filehost/internal/filestore"
 	"github.com/sirupsen/logrus"
 )
 
 func New(cfg Config) *API {
 	return &API{
-		cfg: cfg,
-		db:  cfg.DB,
-		log: cfg.Log,
+		cfg:   cfg,
+		db:    cfg.DB,
+		files: cfg.Filestore,
+		log:   cfg.Log,
 	}
 }
 
 type API struct {
-	cfg Config
-	db  *database.Database
-	log logrus.FieldLogger
+	cfg   Config
+	db    *database.Database
+	files filestore.Filestore
+	log   logrus.FieldLogger
 }
 
 type Config struct {
-	DB     *database.Database
-	Log    logrus.FieldLogger
-	Config *config.Config
+	DB        *database.Database
+	Filestore filestore.Filestore
+	Log       logrus.FieldLogger
+	Config    *config.Config
 }
 
 func (a *API) Run() error {

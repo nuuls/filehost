@@ -3,7 +3,6 @@ package api
 import (
 	"mime"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -22,10 +21,9 @@ func (a *API) serveFile(w http.ResponseWriter, r *http.Request) {
 	// 	http.Error(w, "Rate Limit Exceeded", 429)
 	// 	return
 	// }
-	file, err := os.Open(filepath.Join(a.cfg.Config.FallbackFilePath, name))
+	file, err := a.files.Get(name)
 	if err != nil {
-		l.WithError(err).Warning("not found")
-		http.Error(w, "404 Not Found", 404)
+		http.Error(w, "File not found", 404)
 		return
 	}
 	defer file.Close()
