@@ -38,27 +38,8 @@ func (a *API) serveFile(w http.ResponseWriter, r *http.Request) {
 	if len(spl) > 1 {
 		extension = spl[len(spl)-1]
 	}
-	mimeType := ""
-	if mimeType == "" {
-		mimeType = mime.TypeByExtension("." + extension)
-		if mimeType == "" {
-			sniffData := make([]byte, 512)
-			n, err := file.Read(sniffData)
-			if err != nil {
-				l.WithError(err).Error("cannot read from file")
-				http.Error(w, "Internal Server Error", 500)
-				return
-			}
-			sniffData = sniffData[:n]
-			mimeType = http.DetectContentType(sniffData)
-			_, err = file.Seek(0, 0)
-			if err != nil {
-				l.WithError(err).Error("cannot seek file")
-				http.Error(w, "Internal Server Error", 500)
-				return
-			}
-		}
-	}
+	mimeType := mime.TypeByExtension("." + extension)
+	// TODO: Get mime type from DB
 	if mimeType == MimeTypeOctetStream {
 		switch extension {
 		case "mp3":
