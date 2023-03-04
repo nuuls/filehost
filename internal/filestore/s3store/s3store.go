@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -50,7 +51,9 @@ func New(cfg *config.Config) *S3Store {
 }
 
 func (s *S3Store) Get(name string) (io.ReadSeeker, error) {
-	obj, err := s.client.GetObject(context.Background(), &s3.GetObjectInput{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	obj, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.bucketName,
 		Key:    &name,
 	})
@@ -67,7 +70,9 @@ func (s *S3Store) Get(name string) (io.ReadSeeker, error) {
 func (s *S3Store) Create(name string, data io.Reader) error {
 	// TODO: check if file exists
 	// TODO: remove -1 size
-	_, err := s.client.PutObject(context.Background(), &s3.PutObjectInput{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: &s.bucketName,
 		Key:    &name,
 		Body:   data,
@@ -80,7 +85,9 @@ func (s *S3Store) Create(name string, data io.Reader) error {
 }
 
 func (s *S3Store) Delete(name string) error {
-	_, err := s.client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: &s.bucketName,
 		Key:    &name,
 	})
