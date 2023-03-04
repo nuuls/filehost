@@ -4,3 +4,15 @@ Assets stored on CF R2
 	- Whats the price difference compared to disk?
 		Disk: 0.10$ per GB / month
 		R2: 0.015$ per GB / month
+
+TODO:
+	- Dual read
+	- Fix -1 on r2 upload
+	- Fix memory buffer on r2 get
+	- Delete file from generic
+	- Migration function
+	- Check filenames before overwriting
+DONE:
+	- Generic files interface
+	- Upload file to generic
+	- Get file from generic
