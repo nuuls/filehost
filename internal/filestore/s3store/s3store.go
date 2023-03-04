@@ -1,10 +1,8 @@
 package s3store
 
 import (
-	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"log"
 	"time"
 
@@ -60,11 +58,18 @@ func (s *S3Store) Get(name string) (io.ReadSeeker, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "File not found")
 	}
+	defer obj.Body.Close()
 
-	// TODO: fix
-	bs, _ := ioutil.ReadAll(obj.Body)
-	buf := bytes.NewReader(bs)
-	return buf, nil
+	readSeeker := newReadSeeker(func(rangeStr string) (*s3.GetObjectOutput, error) {
+		obj, err := s.client.GetObject(context.TODO(), &s3.GetObjectInput{
+			Bucket: &s.bucketName,
+			Key:    &name,
+			Range:  &rangeStr,
+		})
+		return obj, err
+	})
+
+	return readSeeker, nil
 }
 
 func (s *S3Store) Create(name string, data io.Reader) error {
