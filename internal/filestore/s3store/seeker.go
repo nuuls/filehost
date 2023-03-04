@@ -16,7 +16,7 @@ type s3ReadSeeker struct {
 	offset int64
 }
 
-const bufferSize = 1024 * 1024 * 16 // 16MB
+const bufferSize = 1024 * 1024 * 8
 
 func newReadSeeker(getRange func(string) (*s3.GetObjectOutput, error)) *s3ReadSeeker {
 	buf := make([]byte, 0, bufferSize)

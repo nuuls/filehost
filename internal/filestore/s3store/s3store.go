@@ -73,8 +73,6 @@ func (s *S3Store) Get(name string) (io.ReadSeeker, error) {
 }
 
 func (s *S3Store) Create(name string, data io.Reader) error {
-	// TODO: check if file exists
-	// TODO: remove -1 size
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{

@@ -6,13 +6,12 @@ Assets stored on CF R2
 		R2: 0.015$ per GB / month
 
 TODO:
-	- Fix -1 on r2 upload
-	- Fix memory buffer on r2 get
-	- Delete file from generic
 	- Migration function
-	- Check filenames before overwriting
 DONE:
 	- Generic files interface
 	- Upload file to generic
 	- Get file from generic
 	- Dual read
+	- Fix memory buffer on r2 get
+	- Fix -1 on r2 upload
+	- Delete file from generic
