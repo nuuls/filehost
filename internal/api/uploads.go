@@ -105,7 +105,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 
 	if !whiteListed(domain.AllowedMimeTypes, mimeType) {
 		l.Warning("mime type not allowed")
-		http.Error(w, "Unsupported Media Type", 415)
+		a.writeError(w, 415, "Unsupported File Type")
 		return
 	}
 
@@ -120,7 +120,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	dst, err := os.Create(dstPath)
 	if err != nil {
 		l.WithError(err).Error("cannot create file")
-		http.Error(w, "Internal Server Error", 500)
+		a.writeError(w, 500, "Internal Server Error")
 		return
 	}
 	sizeBytes, err := io.Copy(dst, file)
