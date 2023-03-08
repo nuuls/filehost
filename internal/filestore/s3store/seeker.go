@@ -67,3 +67,7 @@ func (r *s3ReadSeeker) Seek(offset int64, whence int) (int64, error) {
 
 	return -1, fmt.Errorf("Invalid seek whence")
 }
+
+func (r *s3ReadSeeker) Close() error {
+	return nil
+}

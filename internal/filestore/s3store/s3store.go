@@ -48,7 +48,7 @@ func New(cfg *config.Config) *S3Store {
 	}
 }
 
-func (s *S3Store) Get(name string) (io.ReadSeeker, error) {
+func (s *S3Store) Get(name string) (io.ReadSeekCloser, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 	obj, err := s.client.GetObject(ctx, &s3.GetObjectInput{

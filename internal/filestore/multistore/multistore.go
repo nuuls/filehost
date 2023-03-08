@@ -21,10 +21,10 @@ func New(stores []filestore.Filestore) *Multistore {
 }
 
 // Get file from first available store
-func (m *Multistore) Get(name string) (io.ReadSeeker, error) {
+func (m *Multistore) Get(name string) (io.ReadSeekCloser, error) {
 	var err error
 	for _, s := range m.stores {
-		var file io.ReadSeeker
+		var file io.ReadSeekCloser
 		file, err = s.Get(name)
 		if err == nil {
 			return file, nil

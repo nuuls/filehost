@@ -21,7 +21,7 @@ func New(basePath string) *DiskStore {
 	}
 }
 
-func (d *DiskStore) Get(name string) (io.ReadSeeker, error) {
+func (d *DiskStore) Get(name string) (io.ReadSeekCloser, error) {
 	file, err := os.Open(filepath.Join(d.basePath, name))
 	if err != nil {
 		return nil, errors.Wrap(err, "File not found")
