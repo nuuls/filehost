@@ -102,7 +102,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 
 	if !whiteListed(domain.AllowedMimeTypes, mimeType) {
 		l.Warning("mime type not allowed")
-		http.Error(w, "Unsupported Media Type", 415)
+		a.writeError(w, 415, "Unsupported File Type")
 		return
 	}
 
@@ -119,7 +119,6 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 		a.writeError(w, 500, "Failed to upload file")
 		return
 	}
-
 	// TODO: fix localhost
 	fileURL := fmt.Sprintf("https://%s/%s", domain.Domain, fullName)
 
