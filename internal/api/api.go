@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -65,7 +66,8 @@ func (a *API) newRouter() chi.Router {
 	})
 
 	r.With(a.optionalAuthMiddleware).Post("/upload", a.upload)
-	r.Get("/{filename}", a.serveFile)
+
+	r.With(RatelimitMiddleware(10, time.Minute*5)).Get("/{filename}", a.serveFile)
 
 	return r
 }

@@ -16,11 +16,6 @@ func (a *API) serveFile(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "filename")
 	name = filepath.Base(name)
 	l = l.WithField("file", name)
-	// if ratelimited(r.RemoteAddr) {
-	// 	l.Warning("ratelimited")
-	// 	http.Error(w, "Rate Limit Exceeded", 429)
-	// 	return
-	// }
 	file, err := a.files.Get(name)
 	if err != nil {
 		http.Error(w, "File not found", 404)
