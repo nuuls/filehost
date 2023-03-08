@@ -9,12 +9,15 @@ import (
 )
 
 type Config struct {
-	Addr             string       `default:":7417"`
-	LogLevel         logrus.Level `default:"debug"`
-	PostgresDSN      string       `default:"host=localhost user=postgres password=postgrespw dbname=postgres port=49153 sslmode=disable"`
-	StorageBucketURI string
-	FallbackFilePath string `default:"./files"`
-	DefaultDomainID  uint   `default:"1"`
+	Addr                     string       `default:":7417"`
+	LogLevel                 logrus.Level `default:"debug"`
+	PostgresDSN              string       `default:"host=localhost user=postgres password=postgrespw dbname=postgres port=49153 sslmode=disable"`
+	StorageBucketEndpoint    string       `envconfig:"STORAGE_BUCKET_ENDPOINT"`
+	StorageBucketName        string       `envconfig:"STORAGE_BUCKET_NAME"`
+	StorageBucketAccessKeyID string       `envconfig:"STORAGE_BUCKET_ACCESS_KEY_ID"`
+	StorageBucketSecretKey   string       `envconfig:"STORAGE_BUCKET_SECRET_KEY"`
+	FallbackFilePath         string       `default:"./files"`
+	DefaultDomainID          uint         `default:"1"`
 }
 
 func MustLoad() *Config {

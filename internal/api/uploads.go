@@ -3,12 +3,9 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -115,21 +112,13 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fullName := name + extension
-	dstPath := filepath.Join(a.cfg.Config.FallbackFilePath, fullName)
-	// TODO: check if file exists
-	dst, err := os.Create(dstPath)
-	if err != nil {
-		l.WithError(err).Error("cannot create file")
-		a.writeError(w, 500, "Internal Server Error")
-		return
-	}
-	sizeBytes, err := io.Copy(dst, file)
-	if err != nil {
-		l.WithError(err).Error("failed to save file")
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
 
+	err = a.files.Create(fullName, file)
+	if err != nil {
+		l.WithError(err).Error("Failed to create file")
+		a.writeError(w, 500, "Failed to upload file")
+		return
+	}
 	// TODO: fix localhost
 	fileURL := fmt.Sprintf("https://%s/%s", domain.Domain, fullName)
 
@@ -140,7 +129,7 @@ func (a *API) upload(w http.ResponseWriter, r *http.Request) {
 		OwnerID:      nil,
 		UploaderIP:   r.RemoteAddr,
 		TTLSeconds:   nil,
-		SizeBytes:    uint(sizeBytes),
+		SizeBytes:    uint(mpHeader.Size),
 		Filename:     fullName,
 		MimeType:     mimeType,
 		DomainID:     a.cfg.Config.DefaultDomainID,
@@ -203,7 +192,7 @@ func (a *API) deleteUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.Remove(filepath.Join(a.cfg.Config.FallbackFilePath, filename))
+	err = a.files.Delete(filename)
 	if err != nil {
 		a.writeError(w, 500, "Failed to remove file", err.Error())
 		return

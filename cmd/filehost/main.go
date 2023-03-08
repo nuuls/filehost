@@ -6,6 +6,10 @@ import (
 	"github.com/nuuls/filehost/internal/api"
 	"github.com/nuuls/filehost/internal/config"
 	"github.com/nuuls/filehost/internal/database"
+	"github.com/nuuls/filehost/internal/filestore"
+	"github.com/nuuls/filehost/internal/filestore/diskstore"
+	"github.com/nuuls/filehost/internal/filestore/multistore"
+	"github.com/nuuls/filehost/internal/filestore/s3store"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm/logger"
 )
@@ -42,7 +46,11 @@ func main() {
 	}
 
 	a := api.New(api.Config{
-		DB:     db,
+		DB: db,
+		Filestore: multistore.New([]filestore.Filestore{
+			s3store.New(cfg),
+			diskstore.New(cfg.FallbackFilePath),
+		}),
 		Log:    log,
 		Config: cfg,
 	})

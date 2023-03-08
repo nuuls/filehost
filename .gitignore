@@ -10,3 +10,4 @@
 /filehost-clean
 /filehost-linux
 /deploy.sh
+/.env
