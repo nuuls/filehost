@@ -47,8 +47,6 @@ func main() {
 
 	a := api.New(api.Config{
 		DB: db,
-		// Filestore: diskstore.New(cfg.FallbackFilePath),
-		// Filestore: s3store.New(cfg),
 		Filestore: multistore.New([]filestore.Filestore{
 			s3store.New(cfg),
 			diskstore.New(cfg.FallbackFilePath),
